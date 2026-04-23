@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Needle — Don't Trust, Verify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f2ede4;
+      --cream-dark: #e8e1d4;
+      --ink: #111009;
+      --ink-mid: #5a5448;
+      --ink-light: #9a9080;
+      --orange: #e07a1a;
+      --orange-dim: rgba(224, 122, 26, 0.08);
+      --rule: rgba(17,16,9,0.12);
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-mono: 'Inconsolata', 'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-serif);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(242,237,228,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rule);
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .nav-top {
+      padding: 1rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav-brand {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.01em;
+    }
+
+    .nav-brand span { color: var(--orange); }
+
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange);
+      text-decoration: none;
+      border: 1px solid var(--orange);
+      padding: 0.4rem 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-cta:hover { background: var(--orange); color: var(--cream); }
+
+    .nav-pillars {
+      padding: 0.6rem 3rem;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-pillars::-webkit-scrollbar { display: none; }
+
+    .nav-pillar {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-decoration: none;
+      padding: 0.3rem 1.2rem;
+      border-right: 1px solid var(--rule);
+      white-space: nowrap;
+      transition: color 0.15s, background 0.15s;
+    }
+
+    .nav-pillar:first-child { padding-left: 0; }
+    .nav-pillar:last-child { border-right: none; }
+    .nav-pillar:hover { color: var(--orange); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 10rem 2rem 5rem;
+      text-align: center;
+      position: relative;
+    }
+
+    .logo-wrap {
+      width: min(480px, 78vw);
+      margin-bottom: 3.5rem;
+      animation: fadeUp 0.8s ease 0.1s both;
+      box-shadow: 0 12px 60px rgba(17,16,9,0.18), 0 2px 8px rgba(17,16,9,0.1);
+    }
+
+    .logo-wrap img { width: 100%; height: auto; display: block; }
+
+    .hero-descriptor {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 2rem;
+      animation: fadeUp 0.8s ease 0.25s both;
+    }
+
+    .hero-line {
+      width: 1px;
+      height: 44px;
+      background: linear-gradient(to bottom, var(--orange), transparent);
+      margin: 0 auto 2.5rem;
+      animation: fadeUp 0.8s ease 0.3s both;
+    }
+
+    .hero-intro {
+      font-size: clamp(1.15rem, 2.2vw, 1.45rem);
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--ink-mid);
+      max-width: 500px;
+      margin-bottom: 3.5rem;
+      animation: fadeUp 0.8s ease 0.35s both;
+    }
+
+    /* ── SIGNUP ── */
+    .signup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      max-width: 420px;
+      animation: fadeUp 0.8s ease 0.45s both;
+    }
+
+    .signup-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .signup-row { display: flex; width: 100%; }
+
+    .signup-row input[type="email"] {
+      flex: 1;
+      background: rgba(17,16,9,0.04);
+      border: 1px solid var(--rule);
+      border-right: none;
+      padding: 0.85rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .signup-row input[type="email"]::placeholder { color: var(--ink-light); }
+    .signup-row input[type="email"]:focus { border-color: var(--orange); }
+
+    .signup-row button {
+      background: var(--ink);
+      color: var(--cream);
+      border: 1px solid var(--ink);
+      padding: 0.85rem 1.4rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .signup-row button:hover { background: var(--orange); border-color: var(--orange); }
+
+    .signup-note {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+    }
+
+    .scroll-hint {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      animation: fadeUp 1s ease 0.8s both;
+    }
+
+    .scroll-hint span {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .scroll-hint .bar {
+      width: 1px;
+      height: 32px;
+      background: linear-gradient(to bottom, var(--orange), transparent);
+      animation: pulse 2s ease infinite;
+    }
+
+    /* ── PILLARS SECTION ── */
+    .pillars-section {
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      background: var(--cream-dark);
+    }
+
+    .pillars-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+    }
+
+    .pillar-block {
+      padding: 2.5rem 1.5rem;
+      border-right: 1px solid var(--rule);
+      text-align: center;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      transition: background 0.15s;
+      cursor: pointer;
+    }
+
+    .pillar-block:last-child { border-right: none; }
+    .pillar-block:hover { background: rgba(224,122,26,0.06); }
+    .pillar-block:hover .pillar-name { color: var(--orange); }
+
+    .pillar-number {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.15em;
+      color: var(--orange);
+    }
+
+    .pillar-name {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .pillar-line {
+      width: 16px;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    .pillar-desc {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      line-height: 1.5;
+    }
+
+    /* ── SECTION HEAD ── */
+    .section-head {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 5rem 3rem 2.5rem;
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .section-head::before, .section-head::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--rule);
+    }
+
+    .section-head span {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--orange);
+      white-space: nowrap;
+    }
+
+    /* ── ARTICLES ── */
+    .articles {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 0 3rem 8rem;
+    }
+
+    .article-featured {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      padding: 3rem 0;
+      border-top: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      transition: opacity 0.2s;
+    }
+
+    .article-featured:hover { opacity: 0.7; }
+
+    .featured-badge {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      background: var(--orange);
+      color: var(--cream);
+      padding: 0.2rem 0.55rem;
+      margin-bottom: 1.2rem;
+    }
+
+    .article-cat {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange);
+      margin-bottom: 0.75rem;
+    }
+
+    .article-title {
+      font-family: var(--font-serif);
+      font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+      color: var(--ink);
+    }
+
+    .article-excerpt {
+      font-size: 1rem;
+      font-style: italic;
+      line-height: 1.7;
+      color: var(--ink-mid);
+      margin-bottom: 1.5rem;
+    }
+
+    .article-meta {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 1.2rem;
+    }
+
+    .read-link {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--orange);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: gap 0.2s;
+    }
+
+    .article-featured:hover .read-link,
+    .article-card:hover .read-link { gap: 0.9rem; }
+
+    .featured-image {
+      background: var(--cream-dark);
+      border: 1px solid var(--rule);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 4/3;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .featured-image::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, var(--orange-dim) 0%, transparent 60%);
+    }
+
+    .featured-image span {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .articles-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border-left: 1px solid var(--rule);
+    }
+
+    .article-card {
+      padding: 2rem;
+      border-right: 1px solid var(--rule);
+      border-bottom: 1px solid var(--rule);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+      transition: background 0.15s;
+    }
+
+    .article-card:hover { background: rgba(224,122,26,0.04); }
+
+    .article-card .article-title {
+      font-size: 1.15rem;
+      margin-bottom: 0.7rem;
+      transition: color 0.15s;
+    }
+
+    .article-card:hover .article-title { color: var(--orange); }
+
+    .article-card .article-excerpt {
+      font-size: 0.9rem;
+      margin-bottom: 1rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 2rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--cream-dark);
+    }
+
+    .footer-mark {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .footer-mark span { color: var(--orange); }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    @media (max-width: 780px) {
+      .nav-top { padding: 1rem 1.5rem; }
+      .nav-pillars { padding: 0.6rem 1.5rem; }
+      .hero { padding: 10rem 1.5rem 5rem; }
+      .pillars-inner { grid-template-columns: repeat(3, 1fr); }
+      .pillar-block:nth-child(3) { border-right: none; }
+      .pillar-block:nth-child(4),
+      .pillar-block:nth-child(5),
+      .pillar-block:nth-child(6) { border-top: 1px solid var(--rule); }
+      .article-featured { grid-template-columns: 1fr; gap: 2rem; }
+      .featured-image { aspect-ratio: 16/9; }
+      .articles { padding: 0 1.5rem 5rem; }
+      .section-head { padding: 4rem 1.5rem 2rem; }
+      .articles-grid { grid-template-columns: 1fr; border-left: none; }
+      .article-card { border-right: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 2rem 1.5rem; }
+    }
+
+    @media (max-width: 480px) {
+      .pillars-inner { grid-template-columns: repeat(2, 1fr); }
+      .pillar-block:nth-child(2n) { border-right: none; }
+      .pillar-block:nth-child(3) { border-right: 1px solid var(--rule); }
+      .pillar-block:nth-child(n+3) { border-top: 1px solid var(--rule); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-top">
+      <span class="nav-brand">The <span>Needle</span></span>
+      <a href="#signup" class="nav-cta">Get the Briefing</a>
+    </div>
+    <div class="nav-pillars">
+      <a href="#" class="nav-pillar">Money</a>
+      <a href="#" class="nav-pillar">Politics</a>
+      <a href="#" class="nav-pillar">History</a>
+      <a href="#" class="nav-pillar">Culture</a>
+      <a href="#" class="nav-pillar">Technology</a>
+      <a href="#" class="nav-pillar">Ideas</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="logo-wrap">
+      <img src="assets/Needle-logo.png" alt="The Needle — Don't Trust, Verify" />
+    </div>
+    <p class="hero-descriptor">Intelligence Briefing</p>
+    <div class="hero-line"></div>
+    <p class="hero-intro">
+      Geopolitics, economics, history, and culture —
+      stripped of noise. No consensus. No comfort.
+      Just the signal.
+    </p>
+
+    <div class="signup" id="signup">
+      <span class="signup-label">Get the briefing — free</span>
+      <div class="signup-row">
+        <input type="email" placeholder="your@email.com" />
+        <button type="button">Subscribe</button>
+      </div>
+      <span class="signup-note">No algorithms. No sponsors. Unsubscribe anytime.</span>
+    </div>
+
+    <div class="scroll-hint">
+      <span>Explore</span>
+      <div class="bar"></div>
+    </div>
+  </section>
+
+  <!-- PILLARS -->
+  <div class="pillars-section">
+    <div class="pillars-inner">
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">01</span>
+        <span class="pillar-name">Money</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">Markets · Bitcoin · Power</span>
+      </a>
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">02</span>
+        <span class="pillar-name">Politics</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">Power · States · Actors</span>
+      </a>
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">03</span>
+        <span class="pillar-name">History</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">Patterns · Empires · Cycles</span>
+      </a>
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">04</span>
+        <span class="pillar-name">Culture</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">Identity · Conflict · Meaning</span>
+      </a>
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">05</span>
+        <span class="pillar-name">Technology</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">AI · Networks · Control</span>
+      </a>
+      <a href="#" class="pillar-block">
+        <span class="pillar-number">06</span>
+        <span class="pillar-name">Ideas</span>
+        <div class="pillar-line"></div>
+        <span class="pillar-desc">Philosophy · Systems · Futures</span>
+      </a>
+    </div>
+  </div>
+
+  <!-- ARTICLES -->
+  <div class="section-head">
+    <span>Latest Issues</span>
+  </div>
+
+  <section class="articles">
+
+    <a class="article-featured" href="#">
+      <div>
+        <span class="featured-badge">Featured</span>
+        <div class="article-cat">Religion · Conflict</div>
+        <h2 class="article-title">The Schism That Never Ends: How Identity Outlives Ideology</h2>
+        <p class="article-excerpt">
+          Catholic vs. Protestant. Shia vs. Sunni. The intellectual dispute fades —
+          the identity remains. And with it, the conflict.
+        </p>
+        <div class="article-meta">Issue 001 · History</div>
+        <span class="read-link">Read →</span>
+      </div>
+      <div class="featured-image">
+        <span>Schism Series — I</span>
+      </div>
+    </a>
+
+    <div class="articles-grid">
+      <a class="article-card" href="#">
+        <div class="article-cat">Money</div>
+        <h2 class="article-title">Bitcoin Is Not an Investment. It's a Bet Against the System.</h2>
+        <p class="article-excerpt">Every fiat collapse followed the same arc. Understanding it is not pessimism — it's positioning.</p>
+        <div class="article-meta">Issue 002 · Money</div>
+        <span class="read-link">Read →</span>
+      </a>
+
+      <a class="article-card" href="#">
+        <div class="article-cat">Politics</div>
+        <h2 class="article-title">Who Controls the Chokepoints Controls the World</h2>
+        <p class="article-excerpt">Hormuz. Malacca. Bab el-Mandeb. The map of global power is drawn in straits, not capitals.</p>
+        <div class="article-meta">Issue 003 · Politics</div>
+        <span class="read-link">Read →</span>
+      </a>
+    </div>
+
+  </section>
+
+  <footer>
+    <span class="footer-mark">The <span>Needle</span></span>
+    <span class="footer-copy">© 2026 · Don't Trust, Verify</span>
+  </footer>
+
+</body>
+</html>
