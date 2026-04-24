@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Needle — Don't Trust, Verify</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=Inconsolata:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #f2ede4;
+      --cream-dark: #e8e1d4;
+      --ink: #111009;
+      --ink-mid: #5a5448;
+      --ink-light: #9a9080;
+      --orange: #e07a1a;
+      --orange-dim: rgba(224, 122, 26, 0.08);
+      --rule: rgba(17,16,9,0.12);
+      --font-serif: 'Cormorant Garamond', Georgia, serif;
+      --font-mono: 'Inconsolata', 'Courier New', monospace;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--cream);
+      color: var(--ink);
+      font-family: var(--font-serif);
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      opacity: 0.035;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      background: rgba(242,237,228,0.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--rule);
+      animation: fadeDown 0.6s ease both;
+    }
+
+    .nav-top {
+      padding: 1rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .nav-brand {
+      font-family: var(--font-serif);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .nav-brand span { color: var(--orange); }
+
+    .nav-cta {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange);
+      text-decoration: none;
+      border: 1px solid var(--orange);
+      padding: 0.4rem 0.9rem;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .nav-cta:hover { background: var(--orange); color: var(--cream); }
+
+    .nav-pillars {
+      padding: 0.6rem 3rem;
+      display: flex;
+      gap: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .nav-pillars::-webkit-scrollbar { display: none; }
+
+    .nav-pillar {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      text-decoration: none;
+      padding: 0.3rem 1.2rem;
+      border-right: 1px solid var(--rule);
+      white-space: nowrap;
+      transition: color 0.15s;
+    }
+
+    .nav-pillar:first-child { padding-left: 0; }
+    .nav-pillar:last-child { border-right: none; }
+    .nav-pillar:hover { color: var(--orange); }
+
+    /* ── LAYOUT ── */
+    .page-wrap {
+      display: grid;
+      grid-template-columns: 1fr 400px 1fr;
+      grid-template-rows: 1fr;
+      min-height: 100vh;
+      padding-top: 85px;
+    }
+
+    /* ── LEFT COLUMN — lorem ipsum ── */
+    .col-left {
+      border-right: 1px solid var(--rule);
+      padding: 3rem 2.5rem;
+      animation: fadeUp 0.7s ease 0.2s both;
+      overflow: hidden;
+    }
+
+    .col-right {
+      border-left: 1px solid var(--rule);
+      padding: 3rem 2.5rem;
+      animation: fadeUp 0.7s ease 0.2s both;
+      overflow: hidden;
+    }
+
+    .lorem-label {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      opacity: 0.5;
+      margin-bottom: 1.5rem;
+      display: block;
+    }
+
+    .lorem-title {
+      font-family: var(--font-serif);
+      font-size: 1.3rem;
+      font-weight: 700;
+      line-height: 1.2;
+      color: var(--ink);
+      opacity: 0.2;
+      margin-bottom: 1rem;
+    }
+
+    .lorem-cat {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--orange);
+      opacity: 0.3;
+      margin-bottom: 0.6rem;
+    }
+
+    .lorem-text {
+      font-size: 0.9rem;
+      line-height: 1.75;
+      color: var(--ink-mid);
+      opacity: 0.2;
+      margin-bottom: 1.5rem;
+    }
+
+    .lorem-rule {
+      height: 1px;
+      background: var(--rule);
+      margin: 1.5rem 0;
+      opacity: 0.5;
+    }
+
+    .lorem-meta {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      opacity: 0.3;
+      margin-bottom: 1.5rem;
+    }
+
+    /* ── CENTRE COLUMN — coming soon ── */
+    .col-centre {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+      text-align: center;
+      position: relative;
+      animation: fadeUp 0.8s ease 0.1s both;
+    }
+
+    .col-centre::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(ellipse, rgba(224,122,26,0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .logo-wrap {
+      width: min(320px, 80%);
+      margin-bottom: 2.5rem;
+      box-shadow: 0 12px 60px rgba(17,16,9,0.18), 0 2px 8px rgba(17,16,9,0.1);
+    }
+
+    .logo-wrap img { width: 100%; height: auto; display: block; }
+
+    .coming-soon-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--orange), transparent);
+      margin: 0 auto 1.5rem;
+    }
+
+    .coming-soon-label {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+      margin-bottom: 1rem;
+    }
+
+    .coming-soon-text {
+      font-family: var(--font-serif);
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.2;
+      margin-bottom: 0.75rem;
+    }
+
+    .coming-soon-sub {
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      font-style: italic;
+      color: var(--ink-mid);
+      margin-bottom: 2.5rem;
+      line-height: 1.6;
+    }
+
+    /* signup */
+    .signup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+    }
+
+    .signup-label {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .signup-row { display: flex; width: 100%; }
+
+    .signup-row input[type="email"] {
+      flex: 1;
+      background: rgba(17,16,9,0.04);
+      border: 1px solid var(--rule);
+      border-right: none;
+      padding: 0.75rem 0.9rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      color: var(--ink);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .signup-row input[type="email"]::placeholder { color: var(--ink-light); }
+    .signup-row input[type="email"]:focus { border-color: var(--orange); }
+
+    .signup-row button {
+      background: var(--ink);
+      color: var(--cream);
+      border: 1px solid var(--ink);
+      padding: 0.75rem 1.1rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      font-weight: 500;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+      white-space: nowrap;
+    }
+
+    .signup-row button:hover { background: var(--orange); border-color: var(--orange); }
+
+    .signup-note {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      color: var(--ink-light);
+    }
+
+    /* pillars row at bottom of centre */
+    .centre-pillars {
+      margin-top: 3rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .centre-pillars-label {
+      font-family: var(--font-mono);
+      font-size: 0.52rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    .centre-pillars-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.4rem;
+    }
+
+    .centre-pillar {
+      font-family: var(--font-mono);
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--ink-mid);
+      border: 1px solid var(--rule);
+      padding: 0.25rem 0.6rem;
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      border-top: 1px solid var(--rule);
+      padding: 1.5rem 3rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--cream-dark);
+    }
+
+    .footer-mark {
+      font-family: var(--font-serif);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .footer-mark span { color: var(--orange); }
+
+    .footer-copy {
+      font-family: var(--font-mono);
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink-light);
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 900px) {
+      .page-wrap { grid-template-columns: 1fr; grid-template-rows: auto; }
+      .col-left, .col-right { display: none; }
+      .col-centre { min-height: calc(100vh - 85px); border: none; }
+      nav .nav-top { padding: 1rem 1.5rem; }
+      nav .nav-pillars { padding: 0.6rem 1.5rem; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; padding: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-top">
+      <span class="nav-brand">The <span>Needle</span></span>
+      <a href="#signup" class="nav-cta">Get the Briefing</a>
+    </div>
+    <div class="nav-pillars">
+      <a href="#" class="nav-pillar">Money</a>
+      <a href="#" class="nav-pillar">Politics</a>
+      <a href="#" class="nav-pillar">History</a>
+      <a href="#" class="nav-pillar">Culture</a>
+      <a href="#" class="nav-pillar">Technology</a>
+      <a href="#" class="nav-pillar">Ideas</a>
+    </div>
+  </nav>
+
+  <!-- THREE COLUMN LAYOUT -->
+  <div class="page-wrap">
+
+    <!-- LEFT — lorem ipsum articles -->
+    <div class="col-left">
+      <span class="lorem-label">Coming Soon</span>
+
+      <div class="lorem-cat">Money</div>
+      <div class="lorem-title">Lorem ipsum dolor sit amet consectetur adipiscing elit</div>
+      <div class="lorem-meta">Issue 001 · Money</div>
+      <div class="lorem-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">History</div>
+      <div class="lorem-title">Duis aute irure dolor in reprehenderit in voluptate velit</div>
+      <div class="lorem-meta">Issue 002 · History</div>
+      <div class="lorem-text">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">Technology</div>
+      <div class="lorem-title">Sunt in culpa qui officia deserunt mollit anim id est laborum</div>
+      <div class="lorem-meta">Issue 003 · Technology</div>
+      <div class="lorem-text">Sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">Politics</div>
+      <div class="lorem-title">Nemo enim ipsam voluptatem quia voluptas sit aspernatur</div>
+      <div class="lorem-meta">Issue 004 · Politics</div>
+      <div class="lorem-text">Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</div>
+    </div>
+
+    <!-- CENTRE — coming soon -->
+    <div class="col-centre">
+      <div class="logo-wrap">
+        <img src="assets/Needle-logo.png" alt="The Needle — Don't Trust, Verify" />
+      </div>
+
+      <div class="coming-soon-line"></div>
+      <div class="coming-soon-label">Intelligence Briefing</div>
+      <div class="coming-soon-text">The Needle<br>is Coming</div>
+      <div class="coming-soon-sub">Geopolitics, economics, history, culture.<br>No noise. Just the signal.</div>
+
+      <div class="signup" id="signup">
+        <span class="signup-label">Be first in — get the briefing</span>
+        <div class="signup-row">
+          <input type="email" placeholder="your@email.com" />
+          <button type="button">Notify Me</button>
+        </div>
+        <span class="signup-note">No algorithms. No sponsors. Unsubscribe anytime.</span>
+      </div>
+
+      <div class="centre-pillars">
+        <span class="centre-pillars-label">Six Pillars</span>
+        <div class="centre-pillars-list">
+          <span class="centre-pillar">Money</span>
+          <span class="centre-pillar">Politics</span>
+          <span class="centre-pillar">History</span>
+          <span class="centre-pillar">Culture</span>
+          <span class="centre-pillar">Technology</span>
+          <span class="centre-pillar">Ideas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT — lorem ipsum articles -->
+    <div class="col-right">
+      <span class="lorem-label">Coming Soon</span>
+
+      <div class="lorem-cat">Culture</div>
+      <div class="lorem-title">Neque porro quisquam est qui dolorem ipsum quia dolor sit</div>
+      <div class="lorem-meta">Issue 005 · Culture</div>
+      <div class="lorem-text">Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">Ideas</div>
+      <div class="lorem-title">Ut labore et dolore magnam aliquam quaerat voluptatem</div>
+      <div class="lorem-meta">Issue 006 · Ideas</div>
+      <div class="lorem-text">Ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">Money</div>
+      <div class="lorem-title">Quis autem vel eum iure reprehenderit qui in ea voluptate</div>
+      <div class="lorem-meta">Issue 007 · Money</div>
+      <div class="lorem-text">Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur.</div>
+
+      <div class="lorem-rule"></div>
+
+      <div class="lorem-cat">History</div>
+      <div class="lorem-title">At vero eos et accusamus et iusto odio dignissimos ducimus</div>
+      <div class="lorem-meta">Issue 008 · History</div>
+      <div class="lorem-text">At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti quos dolores et quas molestias excepturi.</div>
+    </div>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <span class="footer-mark">The <span>Needle</span></span>
+    <span class="footer-copy">© 2026 · Don't Trust, Verify</span>
+  </footer>
+
+</body>
+</html>
